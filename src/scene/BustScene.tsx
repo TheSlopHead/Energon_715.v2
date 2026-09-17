@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Center, Environment } from "@react-three/drei";
 
 function Model() {
-  const { scene } = useGLTF('/textured_mesh.glb');
+  const { scene } = useGLTF("/Energon715.glb");
   return (
     <Center>
       <primitive object={scene} />
@@ -13,13 +13,14 @@ function Model() {
 
 export default function BustScene() {
   return (
-    <div style={{ width: '100vw', height: '100vh', background: '#111' }}>
-      <Canvas camera={{position: [0, 0, 3], fov: 50}} gl={{ toneMappingExposure: 1.5 }}>
-        <ambientLight intensity={1} />
-        <directionalLight position={[5, 10, 5]} intensity={1.5} />
-          <directionalLight position={[-5, 5, -5]} intensity={1.5} />
-          <pointLight position={[0, 0, -5]} intensity={5} />
-            <Environment preset="studio" />
+    <div style={{ width: "100vw", height: "100vh", background: "#111" }}>
+      <Canvas
+        camera={{ position: [0, 0, 3], fov: 50 }}
+        gl={{ toneMappingExposure: 1.5 }}
+      >
+        <ambientLight intensity={0.5} />
+        <directionalLight position={[5, 10, 5]} intensity={0.5} />
+        <Environment preset="studio" />
         <Suspense fallback={null}>
           <Model />
         </Suspense>
@@ -34,4 +35,4 @@ export default function BustScene() {
   );
 }
 
-useGLTF.preload('/textured_mesh.glb');
+useGLTF.preload("/Energon715.glb");
