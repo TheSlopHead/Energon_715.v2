@@ -1,18 +1,14 @@
 import { Suspense, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import {
-  OrbitControls,
-  useGLTF,
-  Center,
-  Environment,
-  Stats,
-} from "@react-three/drei";
-import type { Group, Mesh } from "three";
+import { OrbitControls, useGLTF, Environment, Stats } from "@react-three/drei";
+import type { Group, Mesh, Object3D } from "three";
 import * as THREE from "three";
 
 function Model() {
   const { scene } = useGLTF("/Energon715.glb");
   const groupRef = useRef<Group>(null);
+  const cameraRef = useRef<Object3D | null>(null);
+  const cdPlayerRef = useRef<Object3D | null>(null);
   const speedRef = useRef(0.4);
   const hoveredRef = useRef(false);
 
@@ -22,6 +18,16 @@ function Model() {
         (o as Mesh).raycast = () => null;
       }
     });
+
+    cameraRef.current = scene.getObjectByName("camera") ?? null;
+    if (!cameraRef.current) {
+      console.warn('Missing object in model: "camera"');
+    }
+
+    cdPlayerRef.current = scene.getObjectByName("cdplayer") ?? null;
+    if (!cdPlayerRef.current) {
+      console.warn('Missing object in model: "cdplayer"');
+    }
 
     const box = new THREE.Box3().setFromObject(scene);
     const size = box.getSize(new THREE.Vector3());
@@ -43,6 +49,9 @@ function Model() {
     speedRef.current += (target - speedRef.current) * delta * 4;
     if (groupRef.current)
       groupRef.current.rotation.y += speedRef.current * delta;
+
+    if (cameraRef.current) cameraRef.current.rotation.z += delta * 1;
+    if (cdPlayerRef.current) cdPlayerRef.current.rotation.z += delta * 1;
   });
 
   return (
@@ -63,10 +72,19 @@ function Model() {
 
 export default function BustScene() {
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#111" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        background: "transparent",
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
       <Canvas
         camera={{ position: [0, 0, 3], fov: 50 }}
-        gl={{ toneMappingExposure: 1.5 }}
+        gl={{ alpha: true, toneMappingExposure: 1.5 }}
+        style={{ background: "transparent" }}
       >
         <Stats />
         <ambientLight intensity={0.6} />
