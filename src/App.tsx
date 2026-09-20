@@ -1,6 +1,7 @@
 import BustScene from "./scene/BustScene";
 import TelegramBackdrop from "./scene/TelegramBackdrop";
 import CrtOverlay from "./components/CrtOverlay";
+import PanelContainer from "./components/PanelContainer";
 
 function App() {
   return (
@@ -8,6 +9,7 @@ function App() {
       <TelegramBackdrop />
       <BustScene />
       <CrtOverlay />
+      <PanelContainer />
     </div>
   );
 }
