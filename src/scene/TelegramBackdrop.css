@@ -1,0 +1,68 @@
+.tg-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.tg-card {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    width: 230px;
+    height: 78px;
+    padding: 8px 11px;
+    overflow: hidden;
+
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text);
+
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+
+    opacity: var(--card-opacity, 0.5);
+
+    animation:
+        tg-fade-in 0.7s ease-out backwards,
+        tg-drift var(--drift-dur, 20s) linear var(--drift-delay, 0s) infinite;
+}
+
+.tg-card-date {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--text-dim);
+}
+
+.tg-card-text {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+@keyframes tg-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: var(--card-opacity, 0.5);
+    }
+}
+
+@keyframes tg-drift {
+    from {
+        translate: 0 var(--drift-from, 0px);
+    }
+    to {
+        translate: 0 var(--drift-to, -160px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tg-card {
+        animation: none;
+        opacity: var(--card-opacity, 0.5);
+    }
+}
