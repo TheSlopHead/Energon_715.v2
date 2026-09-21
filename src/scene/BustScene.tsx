@@ -1,12 +1,14 @@
 import { Suspense, useRef, useMemo, useEffect } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, Stats } from "@react-three/drei";
 import * as THREE from "three";
 import { usePanelStore } from "../store/usePanelStore";
 
 function Model() {
-  const setActivePanel = usePanelStore((state) => state.setActivePanel);
+  const beginBrainEnter = usePanelStore((state) => state.beginBrainEnter);
   const { scene: source } = useGLTF("/Energon715.glb");
+  const aspect = useThree((state) => state.size.width / state.size.height);
+  const heroOffset = THREE.MathUtils.clamp(aspect * 0.22, 0.12, 0.36);
   const groupRef = useRef<THREE.Group>(null);
   const brainHoveredRef = useRef(false);
   const rotationSpeedRef = useRef(1);
@@ -29,7 +31,8 @@ function Model() {
       brainBounds.union(new THREE.Box3().setFromObject(object));
       const highlight = (material: THREE.Material) => {
         const copy = material.clone();
-        if (copy instanceof THREE.MeshStandardMaterial) brainMaterials.push(copy);
+        if (copy instanceof THREE.MeshStandardMaterial)
+          brainMaterials.push(copy);
         return copy;
       };
       object.material = Array.isArray(object.material)
@@ -57,20 +60,35 @@ function Model() {
     };
   }, [model]);
 
-  const projection = useMemo(() => ({ point: new THREE.Vector3() }), []);
+  const cameraTransitionRef = useRef({
+    initialized: false,
+    blend: 0,
+    originalPosition: new THREE.Vector3(),
+    originalQuaternion: new THREE.Quaternion(),
+    brainWorld: new THREE.Vector3(),
+    direction: new THREE.Vector3(),
+    targetPosition: new THREE.Vector3(),
+    targetQuaternion: new THREE.Quaternion(),
+    lookMatrix: new THREE.Matrix4(),
+  });
 
-  useFrame(({ camera, size }, delta) => {
+  useFrame(({ camera }, delta) => {
     const group = groupRef.current;
     const model = animatedModelRef.current;
     if (!group || !model) return;
-    const { activePanel, setPanelAnchor } = usePanelStore.getState();
-    if (activePanel !== null) {
+    const cameraTransition = cameraTransitionRef.current;
+    const { activePanel, brainTransitionPhase } = usePanelStore.getState();
+    const memoryActive = brainTransitionPhase !== "idle";
+    if (activePanel !== null || memoryActive) {
       rotationSpeedRef.current = 0;
     } else {
       const targetSpeed = brainHoveredRef.current ? 0 : 1;
       // Exponential damping stays stable even when a frame takes a long time.
       rotationSpeedRef.current = THREE.MathUtils.damp(
-        rotationSpeedRef.current, targetSpeed, 6, delta,
+        rotationSpeedRef.current,
+        targetSpeed,
+        6,
+        delta,
       );
       if (Math.abs(rotationSpeedRef.current - targetSpeed) < 0.001) {
         rotationSpeedRef.current = targetSpeed;
@@ -82,6 +100,56 @@ function Model() {
       if (model.cdPlayer) model.cdPlayer.rotation.z += step;
     }
 
+    if (!cameraTransition.initialized) {
+      cameraTransition.originalPosition.copy(camera.position);
+      cameraTransition.originalQuaternion.copy(camera.quaternion);
+      cameraTransition.initialized = true;
+    }
+
+    const cameraTarget =
+      brainTransitionPhase === "entering" || brainTransitionPhase === "open"
+        ? 1
+        : 0;
+    if (brainTransitionPhase === "open") cameraTransition.blend = 1;
+    else if (brainTransitionPhase === "idle") cameraTransition.blend = 0;
+    else {
+      cameraTransition.blend = THREE.MathUtils.damp(
+        cameraTransition.blend,
+        cameraTarget,
+        6,
+        delta,
+      );
+    }
+
+    group.updateWorldMatrix(true, false);
+    cameraTransition.brainWorld.copy(model.brainCenter);
+    group.localToWorld(cameraTransition.brainWorld);
+    cameraTransition.direction
+      .copy(cameraTransition.originalPosition)
+      .sub(cameraTransition.brainWorld)
+      .normalize();
+    cameraTransition.targetPosition
+      .copy(cameraTransition.brainWorld)
+      .addScaledVector(cameraTransition.direction, 0.72);
+    cameraTransition.lookMatrix.lookAt(
+      cameraTransition.targetPosition,
+      cameraTransition.brainWorld,
+      camera.up,
+    );
+    cameraTransition.targetQuaternion.setFromRotationMatrix(
+      cameraTransition.lookMatrix,
+    );
+    camera.position.lerpVectors(
+      cameraTransition.originalPosition,
+      cameraTransition.targetPosition,
+      cameraTransition.blend,
+    );
+    camera.quaternion.slerpQuaternions(
+      cameraTransition.originalQuaternion,
+      cameraTransition.targetQuaternion,
+      cameraTransition.blend,
+    );
+
     for (const material of model.brainMaterials) {
       material.setValues({
         emissive: brainHoveredRef.current ? "#ff4293" : "#000000",
@@ -89,35 +157,26 @@ function Model() {
       });
     }
 
-    // Project the brain's bounds, so the panel follows the model and viewport.
-    group.updateWorldMatrix(true, false);
-    let left = Infinity;
-    let right = -Infinity;
-    let top = Infinity;
-    for (const x of [model.brainBounds.min.x, model.brainBounds.max.x]) {
-      for (const y of [model.brainBounds.min.y, model.brainBounds.max.y]) {
-        for (const z of [model.brainBounds.min.z, model.brainBounds.max.z]) {
-          const point = projection.point.set(x, y, z).applyMatrix4(group.matrixWorld).project(camera);
-          left = Math.min(left, (point.x + 1) * size.width / 2);
-          right = Math.max(right, (point.x + 1) * size.width / 2);
-          top = Math.min(top, (1 - point.y) * size.height / 2);
-        }
-      }
-    }
-    setPanelAnchor({ x: (left + right) / 2, y: top });
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} position-x={heroOffset}>
       <primitive object={model.scene} />
       <mesh
         name="brain-hit-area"
         position={model.brainCenter}
         scale={model.brainSize}
         visible={false}
-        onPointerOver={() => { brainHoveredRef.current = true; }}
-        onPointerOut={() => { brainHoveredRef.current = false; }}
-        onClick={() => setActivePanel("brain")}
+        onPointerOver={() => {
+          brainHoveredRef.current = true;
+        }}
+        onPointerOut={() => {
+          brainHoveredRef.current = false;
+        }}
+        onClick={() => {
+          brainHoveredRef.current = false;
+          beginBrainEnter();
+        }}
       >
         <sphereGeometry args={[1, 24, 16]} />
       </mesh>
@@ -127,14 +186,34 @@ function Model() {
 
 export default function BustScene() {
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "transparent", position: "relative", zIndex: 1 }}>
-      <Canvas camera={{ position: [0, 0, 3], fov: 50 }} gl={{ alpha: true, toneMappingExposure: 1.5 }} style={{ background: "transparent" }}>
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        background: "transparent",
+        position: "relative",
+        zIndex: 2,
+      }}
+    >
+      <Canvas
+        camera={{ position: [0, 0, 3], fov: 50 }}
+        gl={{ alpha: true, toneMappingExposure: 1.5 }}
+        style={{ background: "transparent" }}
+      >
         <Stats />
         <ambientLight intensity={0.6} />
         <directionalLight position={[3, 5, 2]} intensity={1.2} />
         <Environment preset="city" />
-        <Suspense fallback={null}><Model /></Suspense>
-        <OrbitControls enableRotate={false} enableZoom={false} enablePan={false} minDistance={2} maxDistance={10} />
+        <Suspense fallback={null}>
+          <Model />
+        </Suspense>
+        <OrbitControls
+          enableRotate={false}
+          enableZoom={false}
+          enablePan={false}
+          minDistance={2}
+          maxDistance={10}
+        />
       </Canvas>
     </div>
   );

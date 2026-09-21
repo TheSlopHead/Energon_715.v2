@@ -1,4 +1,10 @@
 .tg-backdrop {
+    --parallax-far-x: 0px;
+    --parallax-far-y: 0px;
+    --parallax-middle-x: 0px;
+    --parallax-middle-y: 0px;
+    --parallax-near-x: 0px;
+    --parallax-near-y: 0px;
     position: fixed;
     inset: 0;
     z-index: 0;
@@ -6,63 +12,133 @@
     pointer-events: none;
 }
 
-.tg-card {
+.tg-depth-plane {
     position: absolute;
-    transform: translate(-50%, -50%);
-    width: 230px;
-    height: 78px;
-    padding: 8px 11px;
-    overflow: hidden;
+    inset: -2%;
+    transition: transform 800ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    will-change: transform;
+}
 
+.tg-depth-plane--far {
+    transform: translate3d(
+        var(--parallax-far-x),
+        var(--parallax-far-y),
+        0
+    );
+}
+
+.tg-depth-plane--middle {
+    transform: translate3d(
+        var(--parallax-middle-x),
+        var(--parallax-middle-y),
+        0
+    );
+}
+
+.tg-depth-plane--near {
+    transform: translate3d(
+        var(--parallax-near-x),
+        var(--parallax-near-y),
+        0
+    );
+}
+
+.tg-thought {
+    position: absolute;
+    width: clamp(160px, 20vw, 300px);
+    overflow: hidden;
+    color: #a9b0b8;
     font-family: var(--font-mono);
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    filter: blur(0.15px);
+    animation: tg-thought-stream var(--stream-duration, 76s) linear
+        var(--stream-delay, 0s) infinite both;
+    transition:
+        color 500ms ease,
+        filter 500ms ease;
+    will-change: translate, opacity;
+}
+
+.tg-depth-plane--far .tg-thought {
+    width: clamp(130px, 16vw, 230px);
+    font-size: 9px;
+    filter: blur(0.45px);
+}
+
+.tg-depth-plane--middle .tg-thought {
+    width: clamp(150px, 18vw, 270px);
+    font-size: 10px;
+}
+
+.tg-depth-plane--near .tg-thought {
     font-size: 11px;
-    line-height: 1.45;
-    color: var(--text);
-
-    background: var(--panel-bg);
-    border: 1px solid var(--border);
-
-    opacity: var(--card-opacity, 0.5);
-
-    animation:
-        tg-fade-in 0.7s ease-out backwards,
-        tg-drift var(--drift-dur, 20s) linear var(--drift-delay, 0s) infinite;
 }
 
-.tg-card-date {
-    display: block;
-    margin-bottom: 3px;
-    color: var(--text-dim);
-}
-
-.tg-card-text {
-    overflow: hidden;
+.tg-thought p {
     display: -webkit-box;
+    overflow: hidden;
+    line-height: 1.45;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
 }
 
-@keyframes tg-fade-in {
-    from {
+.tg-thought time {
+    display: block;
+    margin-top: 4px;
+    color: #727a83;
+    font-size: 7px;
+    line-height: 1;
+    letter-spacing: 0.08em;
+}
+
+.tg-thought.is-hovered {
+    z-index: 2;
+    color: #c1c7cd;
+    opacity: 0.42 !important;
+    filter: none;
+    animation-play-state: paused;
+}
+
+@keyframes tg-thought-stream {
+    0% {
         opacity: 0;
+        translate: var(--stream-start-x, 0px) 24vh;
     }
-    to {
-        opacity: var(--card-opacity, 0.5);
+    14% {
+        opacity: var(--thought-opacity, 0.16);
+    }
+    72% {
+        opacity: var(--thought-opacity, 0.16);
+    }
+    100% {
+        opacity: 0;
+        translate: var(--stream-x, 0px) -30vh;
     }
 }
 
-@keyframes tg-drift {
-    from {
-        translate: 0 var(--drift-from, 0px);
+@media (max-width: 700px) {
+    .tg-thought {
+        width: clamp(135px, 38vw, 230px);
     }
-    to {
-        translate: 0 var(--drift-to, -160px);
+
+    .tg-depth-plane--far .tg-thought {
+        width: clamp(110px, 30vw, 180px);
+    }
+
+    .tg-depth-plane--middle .tg-thought {
+        width: clamp(125px, 34vw, 205px);
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .tg-card {
+    .tg-depth-plane {
+        transform: none;
+        transition: none;
+    }
+
+    .tg-thought {
+        opacity: var(--thought-opacity, 0.16);
         animation: none;
-        opacity: var(--card-opacity, 0.5);
     }
 }

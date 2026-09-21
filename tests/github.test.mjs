@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { fetchRepositories, filterRepositories } from "../src/lib/github.ts";
+import { fetchRepositories, fetchRepositoryCommits, filterRepositories } from "../src/lib/github.ts";
 
 const repository = (id, overrides = {}) => ({
   id, name: `project-${id}`, description: null, language: null,
@@ -67,4 +67,42 @@ test("sorts by date, stars, and name without mutating cached data", () => {
   assert.deepEqual(filterRepositories(repos, "", "all", "stars").map(({ id }) => id), [2, 3, 1]);
   assert.deepEqual(filterRepositories(repos, "", "all", "name").map(({ id }) => id), [2, 3, 1]);
   assert.deepEqual(repos.map(({ id }) => id), [1, 2, 3]);
+});
+
+test("loads five real commit records and keeps only the first message line", async () => {
+  let requestedUrl;
+  const result = await fetchRepositoryCommits("project name", async (url) => {
+    requestedUrl = url;
+    return new Response(JSON.stringify([
+      {
+        sha: "abc123",
+        html_url: "https://github.com/TheSlopHead/project-name/commit/abc123",
+        commit: {
+          message: "Add memory browser\n\nLong explanation",
+          author: { date: "2026-09-20T12:00:00Z" },
+        },
+      },
+    ]));
+  });
+
+  assert.match(requestedUrl, /project%20name\/commits\?per_page=5$/);
+  assert.deepEqual(result, [
+    {
+      sha: "abc123",
+      message: "Add memory browser",
+      date: "2026-09-20T12:00:00Z",
+      html_url: "https://github.com/TheSlopHead/project-name/commit/abc123",
+    },
+  ]);
+});
+
+test("handles empty repositories and commit API failures", async () => {
+  assert.deepEqual(
+    await fetchRepositoryCommits("empty", async () => new Response("", { status: 409 })),
+    [],
+  );
+  await assert.rejects(
+    fetchRepositoryCommits("limited", async () => new Response("", { status: 403 })),
+    /limiting requests/,
+  );
 });
