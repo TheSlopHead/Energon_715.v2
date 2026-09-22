@@ -47,7 +47,7 @@
     position: absolute;
     width: clamp(160px, 20vw, 300px);
     overflow: hidden;
-    color: #a9b0b8;
+    color: #38424d;
     font-family: var(--font-mono);
     opacity: 0;
     transform: translate(-50%, -50%);
@@ -86,7 +86,7 @@
 .tg-thought time {
     display: block;
     margin-top: 4px;
-    color: #727a83;
+    color: #46515c;
     font-size: 7px;
     line-height: 1;
     letter-spacing: 0.08em;
@@ -94,8 +94,8 @@
 
 .tg-thought.is-hovered {
     z-index: 2;
-    color: #c1c7cd;
-    opacity: 0.42 !important;
+    color: #202933;
+    opacity: 0.56 !important;
     filter: none;
     animation-play-state: paused;
 }

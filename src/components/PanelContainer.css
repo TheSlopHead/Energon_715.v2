@@ -1,5 +1,13 @@
+.photography-panel-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    isolation: isolate;
+    transform-origin: center;
+}
+
 .neural-interface {
-    --neural-text: #aab6c1;
+    --neural-text: #727b82;
     --neural-muted: #62707c;
     --neural-line: #8da2b51f;
     position: fixed;
@@ -9,7 +17,12 @@
     overflow: hidden;
     color: var(--neural-text);
     background:
-        radial-gradient(ellipse at 50% 42%, #151c23 0%, #090d11 33%, #030506 72%),
+        radial-gradient(
+            ellipse at 50% 42%,
+            #151c23 0%,
+            #090d11 33%,
+            #030506 72%
+        ),
         #030506;
     font-family: "Courier New", Courier, monospace;
     color-scheme: dark;
@@ -131,7 +144,8 @@
     outline: 0;
 }
 
-.neural-object-slot:has(.neural-object-select:focus-visible) .neural-model-preview {
+.neural-object-slot:has(.neural-object-select:focus-visible)
+    .neural-model-preview {
     filter: saturate(0.8) brightness(1) contrast(1.05);
 }
 

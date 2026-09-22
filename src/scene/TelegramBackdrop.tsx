@@ -43,7 +43,8 @@ function buildStream(): StreamThought[] {
     const lane = slot % LANE_POSITIONS.length;
     const duration = 64 + (slot % 7) * 5;
     const top = -8 + (slot / STREAM_COUNT) * 116;
-    const opacityBase = depth === "far" ? 0.1 : depth === "middle" ? 0.15 : 0.21;
+    const opacityBase =
+      depth === "far" ? 0.18 : depth === "middle" ? 0.25 : 0.32;
 
     return {
       depth,

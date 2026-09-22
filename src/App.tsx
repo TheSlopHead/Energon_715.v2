@@ -1,4 +1,3 @@
-import BustScene from "./scene/BustScene";
 import TelegramBackdrop from "./scene/TelegramBackdrop";
 import CrtOverlay from "./components/CrtOverlay";
 import PanelContainer from "./components/PanelContainer";
@@ -9,7 +8,6 @@ function App() {
     <div style={{ width: "100vw", height: "100vh", margin: 0, padding: 0 }}>
       <TelegramBackdrop />
       <HeroIdentity />
-      <BustScene />
       <CrtOverlay />
       <PanelContainer />
     </div>

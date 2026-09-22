@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { usePanelStore } from "../store/usePanelStore";
 import BrainTransition from "./BrainTransition";
 import GithubProjects from "./GithubProjects";
+import PhotographyInterface from "./PhotographyInterface";
 import "./PanelContainer.css";
 
 function BrainInterface() {
@@ -65,10 +67,42 @@ function BrainInterface() {
 
 export default function PanelContainer() {
   const activePanel = usePanelStore((state) => state.activePanel);
+  const reduceMotion = useReducedMotion();
+  const syncPhotographyFromHistory = usePanelStore(
+    (state) => state.syncPhotographyFromHistory,
+  );
+
+  useEffect(() => {
+    window.addEventListener("popstate", syncPhotographyFromHistory);
+    syncPhotographyFromHistory();
+    return () => window.removeEventListener("popstate", syncPhotographyFromHistory);
+  }, [syncPhotographyFromHistory]);
 
   return (
     <>
       {activePanel === "brain" && <BrainInterface />}
+      <AnimatePresence initial={false}>
+        {activePanel === "photography" && (
+          <motion.div
+            key="photography-panel"
+            className="photography-panel-layer"
+            initial={false}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px) brightness(1)" }}
+            exit={{
+              opacity: 0,
+              scale: 1.035,
+              filter: "blur(12px) brightness(1.35)",
+              pointerEvents: "none",
+            }}
+            transition={{
+              duration: reduceMotion ? 0 : 0.62,
+              ease: [0.22, 0.8, 0.25, 1],
+            }}
+          >
+            <PhotographyInterface />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <BrainTransition />
     </>
   );
