@@ -4,13 +4,9 @@ import type { RepositoryCommit } from "../lib/github";
 import { useGithubStore } from "../store/useGithubStore";
 import { usePanelStore } from "../store/usePanelStore";
 import ProjectModelPreview from "./ProjectModelPreview";
+import { PROJECT_MODEL_PATHS } from "../lib/modelAssets";
 
 const MEMORY_SLOT_COUNT = 6;
-const PROJECT_MODEL_PATHS: Record<string, string> = {
-  dronizm: "/CRT-monitor.glb",
-  "energon_715.v2": "/EnergonV2.glb",
-  neurodronizm: "/NeuroDronizm.glb",
-};
 const commitCache = new Map<string, RepositoryCommit[]>();
 
 const dateFormat = new Intl.DateTimeFormat("en", {

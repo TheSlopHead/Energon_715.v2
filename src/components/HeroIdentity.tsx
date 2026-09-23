@@ -2,7 +2,11 @@ import { GITHUB_PROFILE } from "../lib/github";
 import BustScene from "../scene/BustScene";
 import "./HeroIdentity.css";
 
-export default function HeroIdentity() {
+export default function HeroIdentity({ onModelLoaded, onSceneReady, showStats }: {
+  onModelLoaded: (path: string) => void;
+  onSceneReady: () => void;
+  showStats: boolean;
+}) {
   return (
     <main className="hero-layout">
       <div className="hero-copy">
@@ -29,7 +33,7 @@ export default function HeroIdentity() {
         </nav>
       </div>
       <div className="hero-character" aria-label="Interactive 3D character">
-        <BustScene />
+        <BustScene onModelLoaded={onModelLoaded} onSceneReady={onSceneReady} showStats={showStats} />
       </div>
     </main>
   );

@@ -3,11 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preload" as="image" href="/Yuda_cat_poster.webp" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>energon_v2</title>
+    <style>
+      #boot-splash {
+        position: fixed;
+        inset: 0;
+        overflow: hidden;
+        background: radial-gradient(ellipse at 50% 60%, #d7eaff 0%, #b7d6f4 50%, #9fc5ec 100%);
+        font: 12px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: #fff;
+      }
+      #boot-splash img {
+        position: absolute;
+        top: 44%;
+        left: 50%;
+        width: min(80vw, 760px);
+        transform: translate(-50%, -50%);
+      }
+      #boot-splash span {
+        position: absolute;
+        top: 72%;
+        left: 50%;
+        transform: translateX(-50%);
+        letter-spacing: .55em;
+        white-space: nowrap;
+      }
+      @media (max-width: 700px) {
+        #boot-splash img { width: 100vw; }
+        #boot-splash span { top: 66%; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot-splash" role="status" aria-label="Loading portfolio">
+        <img src="/Yuda_cat_poster.webp" alt="" fetchpriority="high" />
+        <span>LOADING...</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

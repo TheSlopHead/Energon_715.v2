@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Environment, Stats } from "@react-three/drei";
 import * as THREE from "three";
 import { usePanelStore } from "../store/usePanelStore";
+import { HERO_MODEL_PATH, MODEL_PATHS } from "../lib/modelAssets";
 
 const CHARACTER_LIGHTING = {
   ambientIntensity: 0.22,
@@ -62,7 +63,7 @@ function Model({
 }) {
   const beginBrainEnter = usePanelStore((state) => state.beginBrainEnter);
   const openPhotography = usePanelStore((state) => state.openPhotography);
-  const { scene: source } = useGLTF("/Energon715.glb");
+  const { scene: source } = useGLTF(HERO_MODEL_PATH);
   const viewportWidth = useThree((state) => state.size.width);
   const viewportHeight = useThree((state) => state.size.height);
   const aspect = viewportWidth / viewportHeight;
@@ -377,7 +378,36 @@ function Model({
   );
 }
 
-export default function BustScene() {
+function TrackModel({ path, onLoaded }: {
+  path: string;
+  onLoaded: (path: string) => void;
+}) {
+  useGLTF(path);
+
+  useEffect(() => {
+    onLoaded(path);
+  }, [onLoaded, path]);
+
+  return null;
+}
+
+function SceneReady({ onReady }: { onReady: () => void }) {
+  const signaled = useRef(false);
+
+  useFrame(() => {
+    if (signaled.current) return;
+    signaled.current = true;
+    onReady();
+  });
+
+  return null;
+}
+
+export default function BustScene({ onModelLoaded, onSceneReady, showStats }: {
+  onModelLoaded: (path: string) => void;
+  onSceneReady: () => void;
+  showStats: boolean;
+}) {
   const activePanel = usePanelStore((state) => state.activePanel);
   const [brainHovered, setBrainHovered] = useState(false);
   const [cameraHovered, setCameraHovered] = useState(false);
@@ -403,7 +433,7 @@ export default function BustScene() {
           cursor: brainHovered || cameraHovered ? "pointer" : "default",
         }}
       >
-        {activePanel === null && <Stats />}
+        {activePanel === null && showStats && <Stats />}
         <ambientLight intensity={CHARACTER_LIGHTING.ambientIntensity} />
         <hemisphereLight
           color={CHARACTER_LIGHTING.hemisphere.skyColor}
@@ -428,15 +458,21 @@ export default function BustScene() {
           position={CHARACTER_LIGHTING.rim.position}
           intensity={CHARACTER_LIGHTING.rim.intensity}
         />
-        <Environment
-          preset="city"
-          environmentIntensity={CHARACTER_LIGHTING.environmentIntensity}
-        />
+        {MODEL_PATHS.map((path) => (
+          <Suspense key={path} fallback={null}>
+            <TrackModel path={path} onLoaded={onModelLoaded} />
+          </Suspense>
+        ))}
         <Suspense fallback={null}>
+          <Environment
+            preset="city"
+            environmentIntensity={CHARACTER_LIGHTING.environmentIntensity}
+          />
           <Model
             onBrainHover={setBrainHovered}
             onCameraHover={setCameraHovered}
           />
+          <SceneReady onReady={onSceneReady} />
         </Suspense>
         <OrbitControls
           enableRotate={false}
@@ -449,5 +485,3 @@ export default function BustScene() {
     </div>
   );
 }
-
-useGLTF.preload("/Energon715.glb");

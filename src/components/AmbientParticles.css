@@ -1,0 +1,61 @@
+.ambient-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ambient-particles--scene {
+  --ambient-shift-x: 0px;
+  --ambient-shift-y: 0px;
+  --ambient-pointer-x: 50%;
+  --ambient-pointer-y: 50%;
+  transform: translate3d(var(--ambient-shift-x), var(--ambient-shift-y), 0);
+  transition: opacity 350ms ease, transform 700ms ease;
+}
+
+.ambient-particles--scene::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 210px at var(--ambient-pointer-x) var(--ambient-pointer-y), rgba(242, 251, 255, 0.18), transparent 75%);
+}
+
+.ambient-particles--off {
+  opacity: 0;
+}
+
+.ambient-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 9px 2px rgba(255, 255, 255, 0.35);
+  animation: ambient-drift 14s ease-in-out infinite alternate;
+}
+
+.ambient-particle:nth-child(7n) {
+  width: 4px;
+  height: 4px;
+  box-shadow: 0 0 14px 4px rgba(255, 255, 255, 0.48);
+}
+
+.ambient-particles--scene .ambient-particle {
+  background: #f8fdff;
+  box-shadow: 0 0 9px 2px rgba(235, 250, 255, 0.52);
+}
+
+.ambient-particles--scene .ambient-particle:nth-child(7n) {
+  box-shadow: 0 0 15px 4px rgba(233, 249, 255, 0.63);
+}
+
+@keyframes ambient-drift {
+  from { transform: translate3d(-10px, 13px, 0) scale(0.8); }
+  to { transform: translate3d(15px, -22px, 0) scale(1.35); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient-particles--scene { transform: none; transition: none; }
+  .ambient-particle { animation: none; }
+}
