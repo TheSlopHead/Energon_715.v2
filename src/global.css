@@ -1,0 +1,24 @@
+:root {
+    --font-mono:
+        "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+        "Liberation Mono", monospace;
+
+    --text: #c9d1e2;
+    --text-dim: #69738a;
+
+    --panel-bg: rgba(10, 12, 18, 0.72);
+    --border: rgba(150, 160, 190, 0.16);
+
+    --scanline-opacity: 0.08;
+    --scanline-size: 3px;
+
+    --vignette-opacity: 0.5;
+    --vignette-radius: 60%;
+
+    --grain-opacity: 0.03;
+
+    --grain-anim-duration: 8s;
+    --grain-anim-steps: 12;
+
+    --backdrop-opacity: 0.2;
+}

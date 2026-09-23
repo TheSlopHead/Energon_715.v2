@@ -1,0 +1,85 @@
+.brain-transition {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    pointer-events: auto;
+    background: #010309;
+    color: #dce9fc;
+    font-family: var(--font-mono);
+}
+
+.brain-transition::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        #8bacdc0a 0 1px,
+        transparent 1px 4px
+    );
+    pointer-events: none;
+}
+
+.brain-transition--entering {
+    animation: neural-entry 1250ms linear both;
+}
+
+.brain-transition--exiting {
+    animation: neural-exit 1050ms linear both;
+}
+
+.brain-transition-message {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px 22px;
+    border-left: 1px solid #91bdf266;
+    color: #e3efff;
+    font-size: clamp(11px, 1.4vw, 14px);
+    letter-spacing: 0.14em;
+    text-shadow: 0 0 10px #75b5ff70;
+}
+
+.brain-transition-message span {
+    color: #8ca8ca;
+    font-size: 8px;
+    letter-spacing: 0.28em;
+}
+
+.brain-transition--entering .brain-transition-message {
+    animation: neural-message-entry 1250ms steps(2, end) both;
+}
+
+.brain-transition--exiting .brain-transition-message {
+    animation: neural-message-exit 1050ms steps(2, end) both;
+}
+
+@keyframes neural-entry {
+    0% { opacity: 0; }
+    34% { opacity: 0.22; }
+    48%, 76% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes neural-exit {
+    0% { opacity: 0; }
+    28%, 58% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes neural-message-entry {
+    0%, 42% { opacity: 0; transform: translateY(4px); }
+    52%, 78% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-3px); }
+}
+
+@keyframes neural-message-exit {
+    0%, 18% { opacity: 0; transform: translateY(-3px); }
+    28%, 55% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(3px); }
+}

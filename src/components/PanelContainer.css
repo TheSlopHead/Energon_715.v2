@@ -1,0 +1,554 @@
+.photography-panel-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    isolation: isolate;
+    transform-origin: center;
+}
+
+.neural-interface {
+    --neural-text: #727b82;
+    --neural-muted: #62707c;
+    --neural-line: #8da2b51f;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    isolation: isolate;
+    overflow: hidden;
+    color: var(--neural-text);
+    background:
+        radial-gradient(
+            ellipse at 50% 42%,
+            #151c23 0%,
+            #090d11 33%,
+            #030506 72%
+        ),
+        #030506;
+    font-family: "Courier New", Courier, monospace;
+    color-scheme: dark;
+    animation: neural-interface-enter 320ms ease-out both;
+}
+
+.neural-interface::before,
+.neural-interface::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.neural-interface::before {
+    opacity: 0.42;
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent 0 2px,
+        #a7bdcf0a 2px 3px
+    );
+}
+
+.neural-interface::after {
+    background: radial-gradient(ellipse at center, transparent 35%, #0008 100%);
+}
+
+.neural-interface--exiting {
+    pointer-events: none;
+    animation: neural-interface-exit 320ms ease-in both;
+}
+
+.neural-interface :is(button, a) {
+    color: inherit;
+    font: inherit;
+    text-decoration: none;
+}
+
+.neural-interface :is(button, a):focus-visible {
+    outline: 1px solid #a8bbc8;
+    outline-offset: 5px;
+}
+
+.neural-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 66px;
+    padding: 0 clamp(22px, 3.2vw, 52px);
+    border-bottom: 1px solid var(--neural-line);
+}
+
+.neural-header h1,
+.neural-counter {
+    margin: 0;
+    font-size: clamp(8px, 0.76vw, 11px);
+    line-height: 1;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+}
+
+.neural-counter {
+    color: #c1ccd5;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+}
+
+.neural-object-browser {
+    position: absolute;
+    inset: 67px 0 57px;
+    overflow: hidden;
+}
+
+.neural-object-slot {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(180px, 25vw, 380px);
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    opacity: 0.28;
+    transform: translate(-50%, -50%) scale(0.4);
+    transition:
+        left 420ms cubic-bezier(0.22, 0.75, 0.2, 1),
+        top 420ms cubic-bezier(0.22, 0.75, 0.2, 1),
+        opacity 320ms ease,
+        transform 420ms cubic-bezier(0.22, 0.75, 0.2, 1),
+        filter 320ms ease;
+    filter: brightness(0.55);
+    cursor: pointer;
+}
+
+.neural-object-slot.is-empty {
+    cursor: default;
+}
+
+.neural-object-select {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.neural-interface .neural-object-select:focus-visible {
+    outline: 0;
+}
+
+.neural-object-slot:has(.neural-object-select:focus-visible)
+    .neural-model-preview {
+    filter: saturate(0.8) brightness(1) contrast(1.05);
+}
+
+.neural-object-slot--0 {
+    top: 42%;
+    left: 53%;
+    z-index: 5;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.04);
+    filter: brightness(1);
+}
+
+.neural-object-slot--neg-1 {
+    top: 46%;
+    left: 27%;
+    z-index: 4;
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.7);
+    filter: brightness(0.72);
+}
+
+.neural-object-slot--1 {
+    top: 46%;
+    left: 78%;
+    z-index: 4;
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.7);
+    filter: brightness(0.72);
+}
+
+.neural-object-slot--neg-2 {
+    top: 38%;
+    left: 9%;
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scale(0.46);
+}
+
+.neural-object-slot--2 {
+    top: 38%;
+    left: 95%;
+    opacity: 0.22;
+    transform: translate(-50%, -50%) scale(0.46);
+}
+
+.neural-object-slot--3 {
+    top: 12%;
+    left: 53%;
+    z-index: 1;
+    opacity: 0.12;
+    transform: translate(-50%, -50%) scale(0.32);
+}
+
+.neural-model-preview {
+    position: absolute;
+    inset: -4%;
+    z-index: 2;
+    display: block;
+    pointer-events: none;
+    filter: saturate(0.52) brightness(0.62) contrast(1.08);
+    transition: filter 320ms ease;
+}
+
+.neural-model-preview > div,
+.neural-model-preview canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.neural-object-slot.is-selected .neural-model-preview {
+    filter: saturate(0.72) brightness(0.88) contrast(1.05);
+}
+
+.neural-project-info {
+    position: absolute;
+    left: clamp(22px, 3.2vw, 52px);
+    bottom: 88px;
+    z-index: 7;
+    width: min(540px, calc(100vw - 44px));
+    min-height: 125px;
+    color: #929faa;
+}
+
+.neural-project-info h2 {
+    margin: 0;
+    overflow: hidden;
+    color: #bac5ce;
+    font-size: clamp(27px, 3vw, 43px);
+    line-height: 1.05;
+    font-weight: 400;
+    letter-spacing: -0.045em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.neural-project-description {
+    display: -webkit-box;
+    max-width: 500px;
+    margin: 11px 0 13px;
+    overflow: hidden;
+    color: #818e99;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.neural-project-info dl {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+    margin: 0;
+    font-size: 8px;
+    letter-spacing: 0.08em;
+}
+
+.neural-project-info dl > div {
+    display: flex;
+    gap: 5px;
+}
+
+.neural-project-info dt {
+    color: #55636e;
+}
+
+.neural-project-info dd {
+    margin: 0;
+    color: #84929d;
+}
+
+.neural-history {
+    max-width: 420px;
+    margin-top: 14px;
+}
+
+.neural-history > p {
+    margin: 0;
+    color: #75838e;
+    font-size: 8px;
+    letter-spacing: 0.12em;
+}
+
+.neural-history ol {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.neural-history a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 18px;
+    min-width: 0;
+    color: #87949e;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    line-height: 1.35;
+}
+
+.neural-history a:hover {
+    color: #bdc7cf;
+}
+
+.neural-history a > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.neural-history time {
+    flex-shrink: 0;
+    color: #5d6a74;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 7px;
+}
+
+.neural-controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: clamp(18px, 3vw, 42px);
+    height: 56px;
+    padding: 0 clamp(22px, 3.2vw, 52px);
+    border-top: 1px solid var(--neural-line);
+    color: #929faa;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+}
+
+.neural-controls > :is(a, button, span),
+.neural-select-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    white-space: nowrap;
+}
+
+.neural-controls button,
+.neural-controls a {
+    cursor: pointer;
+}
+
+.neural-controls button:hover,
+.neural-controls a:hover {
+    color: #c4cfd7;
+}
+
+.neural-controls button:disabled,
+.neural-controls .is-disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.neural-controls > :is(a, button) > span,
+.neural-controls .is-disabled > span {
+    color: #a9bbc8;
+    font-size: 17px;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.neural-select-controls button {
+    border: 0;
+    padding: 1px 2px;
+    background: transparent;
+    color: #a9bbc8;
+    font-size: 15px;
+    line-height: 1;
+}
+
+.neural-system-message {
+    position: absolute;
+    top: 51%;
+    left: 50%;
+    z-index: 7;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0;
+    color: #758591;
+    font-size: 8px;
+    letter-spacing: 0.18em;
+    transform: translate(-50%, -50%);
+}
+
+.neural-system-message p {
+    margin: 0;
+}
+
+.neural-system-message :is(button, a) {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #a5b4bf;
+    cursor: pointer;
+}
+
+@keyframes neural-interface-enter {
+    from {
+        opacity: 0;
+        filter: brightness(0.4);
+    }
+    to {
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
+@keyframes neural-interface-exit {
+    to {
+        opacity: 0;
+        filter: brightness(0.2);
+    }
+}
+
+@media (max-width: 700px) {
+    .neural-header {
+        height: 55px;
+    }
+
+    .neural-object-browser {
+        top: 56px;
+    }
+
+    .neural-object-slot {
+        width: clamp(150px, 42vw, 250px);
+    }
+
+    .neural-object-slot--0 {
+        top: 35%;
+        left: 50%;
+    }
+
+    .neural-object-slot--neg-1 {
+        top: 39%;
+        left: 12%;
+    }
+
+    .neural-object-slot--1 {
+        top: 39%;
+        left: 88%;
+    }
+
+    .neural-object-slot--neg-2 {
+        top: 18%;
+        left: -9%;
+    }
+
+    .neural-object-slot--2 {
+        top: 18%;
+        left: 109%;
+    }
+
+    .neural-object-slot--3 {
+        top: 7%;
+        left: 50%;
+    }
+
+    .neural-project-info {
+        bottom: 80px;
+        min-height: 126px;
+    }
+
+    .neural-project-info h2 {
+        font-size: 28px;
+    }
+
+    .neural-project-description {
+        max-width: calc(100vw - 44px);
+    }
+
+    .neural-controls {
+        justify-content: space-between;
+        gap: 10px;
+        height: 54px;
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 500px) {
+    .neural-controls {
+        gap: 6px;
+        padding-inline: 14px;
+        font-size: 7px;
+    }
+
+    .neural-select-controls > span {
+        display: none;
+    }
+}
+
+@media (max-width: 390px) {
+    .neural-header h1 {
+        max-width: 210px;
+        line-height: 1.4;
+    }
+
+    .neural-controls {
+        padding-inline: 14px;
+    }
+
+    .neural-project-info {
+        left: 14px;
+        width: calc(100vw - 28px);
+    }
+}
+
+@media (max-height: 620px) {
+    .neural-object-slot--0 {
+        top: 34%;
+    }
+
+    .neural-object-slot--neg-1,
+    .neural-object-slot--1 {
+        top: 37%;
+    }
+
+    .neural-project-info {
+        bottom: 68px;
+    }
+
+    .neural-project-description {
+        margin-block: 5px;
+        -webkit-line-clamp: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .neural-interface,
+    .neural-interface--exiting,
+    .neural-object-slot {
+        animation: none;
+        transition: none;
+    }
+}
