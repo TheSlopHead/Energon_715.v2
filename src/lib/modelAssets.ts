@@ -1,6 +1,7 @@
 import { films } from "../../data/photos";
 
 export const HERO_MODEL_PATH = "/Energon715.glb";
+export const THANKS_MODEL_PATH = "/mimicode666.glb";
 
 export const PROJECT_MODEL_PATHS: Record<string, string> = {
   dronizm: "/CRT-monitor.glb",
@@ -12,6 +13,7 @@ export const PROJECT_MODEL_PATHS: Record<string, string> = {
 export const MODEL_PATHS = [
   ...new Set([
     HERO_MODEL_PATH,
+    THANKS_MODEL_PATH,
     ...Object.values(PROJECT_MODEL_PATHS),
     ...films.flatMap((film) => film.model ? [film.model] : []),
   ]),
