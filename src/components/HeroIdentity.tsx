@@ -1,4 +1,5 @@
 import { GITHUB_PROFILE } from "../lib/github";
+import { usePanelStore } from "../store/usePanelStore";
 import BustScene from "../scene/BustScene";
 import "./HeroIdentity.css";
 
@@ -7,9 +8,13 @@ export default function HeroIdentity({ onModelLoaded, onSceneReady, showStats }:
   onSceneReady: () => void;
   showStats: boolean;
 }) {
+  const brainActive = usePanelStore(
+    (state) => state.brainTransitionPhase !== "idle" || state.activePanel === "brain",
+  );
+
   return (
-    <main className="hero-layout">
-      <div className="hero-copy">
+    <main className={`hero-layout${brainActive ? " hero-layout--brain-active" : ""}`}>
+      <div className="hero-copy" inert={brainActive} aria-hidden={brainActive}>
         <section className="hero-identity" aria-labelledby="hero-name">
           <p className="hero-subject">SUBJECT / 0715</p>
           <h1 id="hero-name">ENERGON715</h1>
