@@ -21,6 +21,40 @@
   background: radial-gradient(circle 210px at var(--ambient-pointer-x) var(--ambient-pointer-y), rgba(242, 251, 255, 0.18), transparent 75%);
 }
 
+.ambient-particles--music {
+  --ambient-shift-x: 0px;
+  --ambient-shift-y: 0px;
+  --ambient-pointer-x: 50%;
+  --ambient-pointer-y: 50%;
+  position: fixed;
+  z-index: 1;
+  opacity: .55;
+  transform: translate3d(var(--ambient-shift-x), var(--ambient-shift-y), 0);
+  transition: transform 900ms ease;
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+
+.ambient-particles--music::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle 250px at var(--ambient-pointer-x) var(--ambient-pointer-y), #f4ffd01f, transparent 80%);
+}
+
+.ambient-particles--music .ambient-particle {
+  width: 2px;
+  height: 2px;
+  background: #f7ffd7;
+  box-shadow: 0 0 7px 1px #effbb878;
+  animation: music-particle-drift 14s ease-in-out infinite alternate;
+}
+
+.ambient-particles--music .ambient-particle:nth-child(7n) {
+  width: 3px;
+  height: 3px;
+  box-shadow: 0 0 10px 2px #fffcd891;
+}
+
 .ambient-particles--off {
   opacity: 0;
 }
@@ -55,7 +89,13 @@
   to { transform: translate3d(15px, -22px, 0) scale(1.35); }
 }
 
+@keyframes music-particle-drift {
+  from { transform: translate3d(-8px, 18px, 0) scale(.75); }
+  to { transform: translate3d(12px, -28px, 0) scale(1.2); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ambient-particles--scene { transform: none; transition: none; }
+  .ambient-particles--music { transform: none; transition: none; }
   .ambient-particle { animation: none; }
 }
