@@ -41,6 +41,13 @@ const CAMERA_HOVER_LIGHT = {
   intensityLift: 0.12,
 };
 
+const CD_HOVER_LIGHT = {
+  color: new THREE.Color("#d9ffae"),
+  intensityLift: 0.72,
+  pointIntensity: 2.4,
+  response: 5.5,
+};
+
 const HERO_CAMERA = {
   distance: 3,
   fov: 50,
@@ -57,12 +64,18 @@ const BRAIN_GLOW = {
 function Model({
   onBrainHover,
   onCameraHover,
+  onCdHover,
+  onEarringHover,
 }: {
   onBrainHover: (hovered: boolean) => void;
   onCameraHover: (hovered: boolean) => void;
+  onCdHover: (hovered: boolean) => void;
+  onEarringHover: (hovered: boolean) => void;
 }) {
   const beginBrainEnter = usePanelStore((state) => state.beginBrainEnter);
   const openPhotography = usePanelStore((state) => state.openPhotography);
+  const openMusic = usePanelStore((state) => state.openMusic);
+  const openThanks = usePanelStore((state) => state.openThanks);
   const { scene: source } = useGLTF(HERO_MODEL_PATH);
   const viewportWidth = useThree((state) => state.size.width);
   const viewportHeight = useThree((state) => state.size.height);
@@ -81,10 +94,14 @@ function Model({
   const groupRef = useRef<THREE.Group>(null);
   const brainHoveredRef = useRef(false);
   const cameraHoveredRef = useRef(false);
+  const cdHoveredRef = useRef(false);
+  const earringHoveredRef = useRef(false);
   const cameraHighlightRef = useRef(false);
   const brainHoverBlendRef = useRef(0);
+  const cdHoverBlendRef = useRef(0);
   const rotationSpeedRef = useRef(1);
   const cameraMotionRef = useRef(1);
+  const cdLightRef = useRef<THREE.PointLight>(null);
 
   const model = useMemo(() => {
     const scene = source.clone(true);
@@ -99,6 +116,16 @@ function Model({
     const cameraBounds = camera
       ? new THREE.Box3().setFromObject(camera)
       : new THREE.Box3();
+    const cdPlayer = scene.getObjectByName("cdplayer");
+    const cdBounds = cdPlayer
+      ? new THREE.Box3().setFromObject(cdPlayer)
+      : new THREE.Box3();
+    const earrings = scene.getObjectByName("ears");
+    const earBounds = earrings
+      ? new THREE.Box3().setFromObject(earrings)
+      : new THREE.Box3();
+    const earSize = earBounds.getSize(new THREE.Vector3());
+    const earCenter = earBounds.getCenter(new THREE.Vector3());
     const characterMaterials: THREE.Material[] = [];
     const brainMaterials: THREE.MeshStandardMaterial[] = [];
     scene.traverse((object) => {
@@ -155,6 +182,55 @@ function Model({
       }
     });
 
+    const cdMaterials: {
+      material: THREE.MeshStandardMaterial;
+      idleEmissive: THREE.Color;
+      hoverEmissive: THREE.Color;
+      idleIntensity: number;
+    }[] = [];
+    cdPlayer?.traverse((object) => {
+      if (!(object instanceof THREE.Mesh)) return;
+      const materials = Array.isArray(object.material)
+        ? object.material
+        : [object.material];
+      for (const material of materials) {
+        if (!(material instanceof THREE.MeshStandardMaterial)) continue;
+        const idleEmissive = material.emissive.clone();
+        // A textured emissive map keeps the dark player dark even at high
+        // intensity. Use a clear color lift so hover reads on every part.
+        material.emissiveMap = null;
+        material.needsUpdate = true;
+        cdMaterials.push({
+          material,
+          idleEmissive,
+          hoverEmissive: CD_HOVER_LIGHT.color,
+          idleIntensity: material.emissiveIntensity,
+        });
+      }
+    });
+
+    // The source mesh contains both ears. Two small hotspots avoid turning
+    // the entire width of the face into a single click target.
+    const earringHitCenters = earrings
+      ? [
+          new THREE.Vector3(
+            earBounds.min.x + earSize.x * 0.065,
+            earCenter.y,
+            earBounds.max.z + 0.3,
+          ),
+          new THREE.Vector3(
+            earBounds.max.x - earSize.x * 0.065,
+            earCenter.y,
+            earBounds.max.z + 0.3,
+          ),
+        ]
+      : [];
+    const earringHitSize = new THREE.Vector3(
+      Math.max(0.095, earSize.x * 0.14),
+      Math.max(0.12, earSize.y * 0.85),
+      0.2,
+    );
+
     return {
       scene,
       characterMaterials,
@@ -166,7 +242,13 @@ function Model({
       cameraMaterials,
       cameraCenter: cameraBounds.getCenter(new THREE.Vector3()),
       cameraSize: cameraBounds.getSize(new THREE.Vector3()).multiplyScalar(1.3),
-      cdPlayer: scene.getObjectByName("cdplayer"),
+      cdPlayer,
+      cdMaterials,
+      cdCenter: cdBounds.getCenter(new THREE.Vector3()),
+      cdSize: cdBounds.getSize(new THREE.Vector3()).multiplyScalar(1.3),
+      earrings,
+      earringHitCenters,
+      earringHitSize,
     };
   }, [source]);
 
@@ -212,12 +294,15 @@ function Model({
     if (activePanel !== null || memoryActive) {
       rotationSpeedRef.current = 0;
     } else {
-      const targetSpeed = brainHoveredRef.current ? 0 : 1;
+      const targetSpeed =
+        brainHoveredRef.current || cdHoveredRef.current || earringHoveredRef.current
+          ? 0
+          : 1;
       // Exponential damping stays stable even when a frame takes a long time.
       rotationSpeedRef.current = THREE.MathUtils.damp(
         rotationSpeedRef.current,
         targetSpeed,
-        6,
+        cdHoveredRef.current ? CD_HOVER_LIGHT.response : 6,
         delta,
       );
       if (Math.abs(rotationSpeedRef.current - targetSpeed) < 0.001) {
@@ -248,6 +333,29 @@ function Model({
             (cameraHoveredRef.current ? CAMERA_HOVER_LIGHT.intensityLift : 0),
         });
       }
+    }
+
+    cdHoverBlendRef.current = THREE.MathUtils.damp(
+      cdHoverBlendRef.current,
+      cdHoveredRef.current && activePanel === null && !memoryActive ? 1 : 0,
+      CD_HOVER_LIGHT.response,
+      delta,
+    );
+    for (const {
+      material,
+      idleEmissive,
+      hoverEmissive,
+      idleIntensity,
+    } of model.cdMaterials) {
+      material.emissive.copy(idleEmissive).lerp(hoverEmissive, cdHoverBlendRef.current);
+      material.setValues({
+        emissiveIntensity:
+          idleIntensity + CD_HOVER_LIGHT.intensityLift * cdHoverBlendRef.current,
+      });
+    }
+    if (cdLightRef.current) {
+      cdLightRef.current.intensity =
+        CD_HOVER_LIGHT.pointIntensity * cdHoverBlendRef.current;
     }
 
     if (!cameraTransition.initialized) {
@@ -333,6 +441,16 @@ function Model({
     onCameraHover(hovered);
   };
 
+  const setCdHovered = (hovered: boolean) => {
+    cdHoveredRef.current = hovered;
+    onCdHover(hovered);
+  };
+
+  const setEarringHovered = (hovered: boolean) => {
+    earringHoveredRef.current = hovered;
+    onEarringHover(hovered);
+  };
+
   return (
     <group
       ref={groupRef}
@@ -374,6 +492,57 @@ function Model({
           <boxGeometry args={[1, 1, 1]} />
         </mesh>
       )}
+      {model.cdPlayer && (
+        <>
+          <pointLight
+            ref={cdLightRef}
+            color={CD_HOVER_LIGHT.color}
+            intensity={0}
+            distance={1.1}
+            decay={2}
+            position={[model.cdCenter.x, model.cdCenter.y, model.cdCenter.z + 0.18]}
+          />
+          <mesh
+            name="cdplayer-hit-area"
+            position={model.cdCenter}
+            scale={model.cdSize}
+            visible={false}
+            onPointerOver={() => setCdHovered(true)}
+            onPointerOut={() => setCdHovered(false)}
+            onClick={() => {
+              setCdHovered(false);
+              openMusic();
+            }}
+          >
+            <boxGeometry args={[1, 1, 1]} />
+          </mesh>
+        </>
+      )}
+      {model.earrings && (
+        <>
+          {model.earringHitCenters.map((position, index) => (
+            <mesh
+              key={index}
+              name={`earring-hit-area-${index}`}
+              position={position}
+              scale={model.earringHitSize}
+              visible={false}
+              onPointerOver={(event) => {
+                event.stopPropagation();
+                setEarringHovered(true);
+              }}
+              onPointerOut={() => setEarringHovered(false)}
+              onClick={(event) => {
+                event.stopPropagation();
+                setEarringHovered(false);
+                openThanks();
+              }}
+            >
+              <sphereGeometry args={[1, 16, 12]} />
+            </mesh>
+          ))}
+        </>
+      )}
     </group>
   );
 }
@@ -411,6 +580,8 @@ export default function BustScene({ onModelLoaded, onSceneReady, showStats }: {
   const activePanel = usePanelStore((state) => state.activePanel);
   const [brainHovered, setBrainHovered] = useState(false);
   const [cameraHovered, setCameraHovered] = useState(false);
+  const [cdHovered, setCdHovered] = useState(false);
+  const [earringHovered, setEarringHovered] = useState(false);
 
   return (
     <div
@@ -430,7 +601,7 @@ export default function BustScene({ onModelLoaded, onSceneReady, showStats }: {
         gl={{ alpha: true, toneMappingExposure: 1.5 }}
         style={{
           background: "transparent",
-          cursor: brainHovered || cameraHovered ? "pointer" : "default",
+          cursor: brainHovered || cameraHovered || cdHovered || earringHovered ? "pointer" : "default",
         }}
       >
         {activePanel === null && showStats && <Stats />}
@@ -471,6 +642,8 @@ export default function BustScene({ onModelLoaded, onSceneReady, showStats }: {
           <Model
             onBrainHover={setBrainHovered}
             onCameraHover={setCameraHovered}
+            onCdHover={setCdHovered}
+            onEarringHover={setEarringHovered}
           />
           <SceneReady onReady={onSceneReady} />
         </Suspense>
