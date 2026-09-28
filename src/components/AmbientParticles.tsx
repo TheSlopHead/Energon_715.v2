@@ -10,13 +10,13 @@ const PARTICLES = Array.from({ length: 48 }, (_, index) => ({
 }));
 
 export default function AmbientParticles({ variant, enabled = true }: {
-  variant: "loading" | "scene";
+  variant: "loading" | "scene" | "music";
   enabled?: boolean;
 }) {
   const fieldRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (variant !== "scene" || !enabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if ((variant !== "scene" && variant !== "music") || !enabled || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let frame = 0;
     let x = 0.5;
@@ -25,8 +25,9 @@ export default function AmbientParticles({ variant, enabled = true }: {
       frame = 0;
       const field = fieldRef.current;
       if (!field) return;
-      field.style.setProperty("--ambient-shift-x", `${(x - 0.5) * -20}px`);
-      field.style.setProperty("--ambient-shift-y", `${(y - 0.5) * -14}px`);
+      const shift = variant === "music" ? 12 : 20;
+      field.style.setProperty("--ambient-shift-x", `${(x - 0.5) * -shift}px`);
+      field.style.setProperty("--ambient-shift-y", `${(y - 0.5) * -shift * 0.7}px`);
       field.style.setProperty("--ambient-pointer-x", `${x * 100}%`);
       field.style.setProperty("--ambient-pointer-y", `${y * 100}%`);
     };
@@ -56,7 +57,7 @@ export default function AmbientParticles({ variant, enabled = true }: {
       className={`ambient-particles ambient-particles--${variant}${enabled ? "" : " ambient-particles--off"}`}
       aria-hidden="true"
     >
-      {PARTICLES.map((style, index) => (
+      {(variant === "music" ? PARTICLES.slice(0, 32) : PARTICLES).map((style, index) => (
         <span key={index} className="ambient-particle" style={style} />
       ))}
     </div>
