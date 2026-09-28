@@ -16,6 +16,13 @@
     height: 100%;
     min-width: 0;
     pointer-events: none;
+    transition: opacity 320ms ease;
+}
+
+.hero-layout--brain-active .hero-copy {
+    opacity: 0;
+    visibility: hidden;
+    transition: none;
 }
 
 .hero-identity,
@@ -137,4 +144,8 @@
         gap: 18px;
         margin-top: 20px;
     }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-copy { transition: none; }
 }
