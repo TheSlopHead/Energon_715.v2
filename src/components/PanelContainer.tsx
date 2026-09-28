@@ -4,6 +4,8 @@ import { usePanelStore } from "../store/usePanelStore";
 import BrainTransition from "./BrainTransition";
 import GithubProjects from "./GithubProjects";
 import PhotographyInterface from "./PhotographyInterface";
+import MusicInterface from "./MusicInterface";
+import ThanksInterface from "./ThanksInterface";
 import "./PanelContainer.css";
 
 function BrainInterface() {
@@ -68,15 +70,15 @@ function BrainInterface() {
 export default function PanelContainer() {
   const activePanel = usePanelStore((state) => state.activePanel);
   const reduceMotion = useReducedMotion();
-  const syncPhotographyFromHistory = usePanelStore(
-    (state) => state.syncPhotographyFromHistory,
+  const syncPanelsFromHistory = usePanelStore(
+    (state) => state.syncPanelsFromHistory,
   );
 
   useEffect(() => {
-    window.addEventListener("popstate", syncPhotographyFromHistory);
-    syncPhotographyFromHistory();
-    return () => window.removeEventListener("popstate", syncPhotographyFromHistory);
-  }, [syncPhotographyFromHistory]);
+    window.addEventListener("popstate", syncPanelsFromHistory);
+    syncPanelsFromHistory();
+    return () => window.removeEventListener("popstate", syncPanelsFromHistory);
+  }, [syncPanelsFromHistory]);
 
   return (
     <>
@@ -100,6 +102,30 @@ export default function PanelContainer() {
             }}
           >
             <PhotographyInterface />
+          </motion.div>
+        )}
+        {activePanel === "music" && (
+          <motion.div
+            key="music-panel"
+            className="photography-panel-layer"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.38 }}
+          >
+            <MusicInterface />
+          </motion.div>
+        )}
+        {activePanel === "thanks" && (
+          <motion.div
+            key="thanks-panel"
+            className="photography-panel-layer"
+            initial={{ opacity: 0, filter: "blur(10px)" }}
+            animate={{ opacity: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, filter: "blur(8px)", pointerEvents: "none" }}
+            transition={{ duration: reduceMotion ? 0 : 0.48, ease: [0.22, 0.8, 0.25, 1] }}
+          >
+            <ThanksInterface />
           </motion.div>
         )}
       </AnimatePresence>
