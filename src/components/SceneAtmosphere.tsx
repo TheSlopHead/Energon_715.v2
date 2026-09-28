@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePanelStore } from "../store/usePanelStore";
 import AmbientParticles from "./AmbientParticles";
+import ThanksPeek from "./ThanksPeek";
 import "./SceneAtmosphere.css";
 
 export default function SceneAtmosphere() {
@@ -9,6 +10,8 @@ export default function SceneAtmosphere() {
   const brainTransitionPhase = usePanelStore((state) => state.brainTransitionPhase);
   const beginBrainEnter = usePanelStore((state) => state.beginBrainEnter);
   const openPhotography = usePanelStore((state) => state.openPhotography);
+  const openMusic = usePanelStore((state) => state.openMusic);
+  const openThanks = usePanelStore((state) => state.openThanks);
 
   if (activePanel !== null || brainTransitionPhase !== "idle") return null;
 
@@ -43,6 +46,22 @@ export default function SceneAtmosphere() {
           </span>
           <span className="scene-atmosphere__arrow" aria-hidden="true">↗</span>
         </button>
+        <button type="button" onClick={openMusic} aria-label="Explore music">
+          <span className="scene-atmosphere__index">03</span>
+          <span className="scene-atmosphere__control-copy">
+            <strong>CD PLAYER</strong>
+            <small>LISTENING ROOM</small>
+          </span>
+          <span className="scene-atmosphere__arrow" aria-hidden="true">↗</span>
+        </button>
+        <button type="button" onClick={openThanks} aria-label="Open special thanks">
+          <span className="scene-atmosphere__index">04</span>
+          <span className="scene-atmosphere__control-copy">
+            <strong>EARRING</strong>
+            <small>SPECIAL THANKS</small>
+          </span>
+          <span className="scene-atmosphere__arrow" aria-hidden="true">↗</span>
+        </button>
       </nav>
 
       <button
@@ -54,6 +73,7 @@ export default function SceneAtmosphere() {
         <span className="scene-atmosphere__toggle-light" aria-hidden="true" />
         PARTICLES {particlesEnabled ? "ON" : "OFF"}
       </button>
+      <ThanksPeek />
     </div>
   );
 }
