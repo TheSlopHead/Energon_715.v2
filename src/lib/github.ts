@@ -1,4 +1,4 @@
-export const GITHUB_USERNAME = "TheSlopHead";
+export const GITHUB_USERNAME = "energon715";
 export const GITHUB_PROFILE = `https://github.com/${GITHUB_USERNAME}`;
 
 export interface Repository {
